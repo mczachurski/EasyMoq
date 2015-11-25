@@ -1,4 +1,4 @@
-namespace SunLine.EasyMoq.Test
+namespace SunLine.EasyMoq.Tests
 {
 	public interface IFakeProxyInterface
 	{

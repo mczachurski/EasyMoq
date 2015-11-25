@@ -6,7 +6,7 @@
     "projectUrl": "",
     "licenseUrl": "",
     "tooling": {
-      "defaultNamespace": "SunLine.EasyMoq.Test"
+      "defaultNamespace": "SunLine.EasyMoq.Tests"
     },
     "dependencies": {
         "xunit": "2.1.0",

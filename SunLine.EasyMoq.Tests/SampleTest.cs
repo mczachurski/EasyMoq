@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 using SunLine.EasyMoq.Core;
 
-namespace SunLine.EasyMoq.Test
+namespace SunLine.EasyMoq.Tests
 {
     // see example explanation on xUnit.net website:
     // https://xunit.github.io/docs/getting-started-dnx.html
@@ -17,16 +14,23 @@ namespace SunLine.EasyMoq.Test
             
             Assert.NotNull(mock);
         }
-        
+    
         [Fact]
         public void MockObjectTypeMustBeCreated()
         {
             var mock = new Mock<IFakeProxyInterface>();
-            
-            Console.WriteLine(mock.ObjectType.FullName); 
-            Console.WriteLine(mock.Object.ToString());
              
             Assert.NotNull(mock.ObjectType);
+        }
+        
+        [Fact]
+        public void MockObjectMustImplementInterface()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            
+            var proxyObject = mock.Object as IFakeProxyInterface;
+
+            Assert.NotNull(proxyObject);
         }
     }
 }

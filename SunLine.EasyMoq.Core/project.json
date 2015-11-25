@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0-*",
+  "description": "SunLine.EasyMoq.Core Class Library",
+  "authors": [ "Class Library template" ],
+  "tags": [""],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "tooling": {
+    "defaultNamespace": "SunLine.EasyMoq.Core"
+  },
+
+  "frameworks": {
+    "dnx451": {
+      "dependencies": {}
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.1-beta-23516",
+        "System.Collections": "4.0.11-beta-23516",
+        "System.Linq": "4.0.1-beta-23516",
+        "System.Runtime": "4.0.21-beta-23516",
+        "System.Threading": "4.0.11-beta-23516",
+        "System.Reflection.Emit": "4.0.1-beta-23516"
+      }
+    }
+  }
+}

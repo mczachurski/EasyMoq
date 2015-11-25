@@ -36,6 +36,9 @@ namespace SunLine.EasyMoq.Core
             ConstructorBuilder constructor = dynamicType.DefineDefaultConstructor(MethodAttributes.Public | 
                 MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
             
+            dynamicType.AddInterfaceImplementation(typeof(IDisposable));
+            dynamicType.DefineMethod("Dispose", MethodAttributes.Public, null, null);
+            
             _objectType = dynamicType.CreateTypeInfo().AsType();
             _object = Activator.CreateInstance(_objectType);
         }

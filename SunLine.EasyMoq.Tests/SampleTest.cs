@@ -32,5 +32,15 @@ namespace SunLine.EasyMoq.Tests
 
             Assert.NotNull(proxyObject);
         }
+        
+        [Fact]
+        public void MockShouldSetupEmptyMethod()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            
+            mock.Setup(x => x.SimpleMethod()).Returns(() => "Some text!");
+
+            Assert.Equal("Some text!", mock.Object.SimpleMethod());
+        }
     }
 }

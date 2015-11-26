@@ -1,16 +1,55 @@
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Linq.Expressions;
 
 namespace SunLine.EasyMoq.Core
 {
-    public class Mock<T>
+    public class SetupBuilder<TMock, TResult> where TMock : class
+	{
+        private readonly Mock<TMock> _mock;
+        private readonly Expression<Func<TMock, TResult>> _expression;
+        
+        private Func<TResult> _returnExpression;
+        
+        public SetupBuilder(Mock<TMock> mock, Expression<Func<TMock, TResult>> expression)
+        {
+            _mock = mock;
+            _expression = expression;
+        }
+        
+        public SetupBuilder<TMock, TResult> Returns(Func<TResult> returnExpression)
+		{
+			SetReturnDelegate(returnExpression);
+            return this;
+		}
+
+		public SetupBuilder<TMock, TResult> Returns(TResult value)
+		{
+			Returns(() => value);
+            return this;
+		}
+        
+        private void SetReturnDelegate(Func<TResult> returnExpression)
+        {
+            if (returnExpression == null)
+			{
+				_returnExpression = (Func<TResult>)(() => default(TResult));
+			}
+			else
+			{
+				_returnExpression = returnExpression;
+			}
+        }
+	}
+    
+    public class Mock<TMock> where TMock : class
     {
-        private T _object;
+        private TMock _object;
         
         private Type _objectType;
         
-        public T Object {
+        public TMock Object {
             get {
                 return _object;
             }
@@ -25,7 +64,7 @@ namespace SunLine.EasyMoq.Core
         
         public Mock()
         {
-            Type mockInterface = typeof(T);
+            Type mockInterface = typeof(TMock);
                  
             var assemblyName = new AssemblyName("SunLine.EasyMoq.ProxyAssembly");
             assemblyName.Version = new Version(1, 0, 0);
@@ -44,8 +83,13 @@ namespace SunLine.EasyMoq.Core
             } 
           
             _objectType = typeBuilder.CreateTypeInfo().AsType();
-            _object = (T) Activator.CreateInstance(_objectType);
+            _object = (TMock) Activator.CreateInstance(_objectType);
         }
+        
+        public SetupBuilder<TMock, TResult> Setup<TResult>(Expression<Func<TMock, TResult>> expression)
+		{
+			return new SetupBuilder<TMock, TResult>(this, expression);
+		}
         
         private void AddMethodImpl(TypeBuilder typeBuilder, MethodInfo methodInfo)
         {
@@ -55,7 +99,6 @@ namespace SunLine.EasyMoq.Core
             MethodBuilder mdb = typeBuilder.DefineMethod(methodInfo.Name, MethodAttributes.Public | MethodAttributes.Virtual, methodInfo.ReturnType, paramTypes);
             
             ILGenerator il = mdb.GetILGenerator();
-            il.EmitWriteLine("This is line of text in method mody.");
             il.Emit(OpCodes.Ret);
             
             typeBuilder.DefineMethodOverride(mdb, methodInfo);

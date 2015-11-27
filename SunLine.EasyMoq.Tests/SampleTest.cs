@@ -34,13 +34,32 @@ namespace SunLine.EasyMoq.Tests
         }
         
         [Fact]
-        public void MockShouldSetupEmptyMethod()
+        public void MockObjectMustCanCallSimplestMethod()
         {
             var mock = new Mock<IFakeProxyInterface>();
             
-            mock.Setup(x => x.SimpleMethod()).Returns(() => "Some text!");
+            mock.Object.SimplestMethod();
+        }
+        
+        [Fact]
+        public void MockObjectMustCanCallMethodReturningInt()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            
+            mock.Setup(x => x.MethodReturnsInt()).Returns(() => 666);
 
-            Assert.Equal("Some text!", mock.Object.SimpleMethod());
+            mock.Object.MethodReturnsInt();
+        }
+        
+        [Fact]
+        public void MockObjectMustReturnExpectedString()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodReturnsInt()).Returns(() =>666);
+
+            var number = mock.Object.MethodReturnsInt();
+
+            Assert.Equal(666, number);
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Linq.Expressions;
+using System.Collections.Generic;
 
 namespace SunLine.EasyMoq.Core
 {
@@ -96,12 +97,155 @@ namespace SunLine.EasyMoq.Core
             ParameterInfo[] parameters = methodInfo.GetParameters();
             Type[] paramTypes = ParamTypes(parameters, false);
             
-            MethodBuilder mdb = typeBuilder.DefineMethod(methodInfo.Name, MethodAttributes.Public | MethodAttributes.Virtual, methodInfo.ReturnType, paramTypes);
+            MethodBuilder methodBuilder = typeBuilder.DefineMethod(methodInfo.Name, 
+                MethodAttributes.Public | MethodAttributes.Virtual, methodInfo.ReturnType, paramTypes);
             
-            ILGenerator il = mdb.GetILGenerator();
-            il.Emit(OpCodes.Ret);
+            EmitInvokeMethod(methodBuilder);
             
-            typeBuilder.DefineMethodOverride(mdb, methodInfo);
+            typeBuilder.DefineMethodOverride(methodBuilder, methodInfo);
+        }
+        
+        private void WriteILForMethod( MethodBuilder builder)
+		{
+			ILGenerator ilGenerator = builder.GetILGenerator();
+
+
+			if (builder.ReturnType != typeof(void))
+			{
+				ilGenerator.DeclareLocal(builder.ReturnType);
+			}
+
+
+
+			if (builder.ReturnType != typeof(void))
+			{
+				if (!builder.ReturnType.GetTypeInfo().IsValueType)
+				{
+					ilGenerator.Emit(OpCodes.Castclass, builder.ReturnType);
+				}
+				else
+				{
+					ilGenerator.Emit(OpCodes.Unbox, builder.ReturnType);
+					ilGenerator.Emit(ConvertTypeToOpCode(builder.ReturnType));
+				}
+
+				ilGenerator.Emit(OpCodes.Stloc, 1);
+
+				Label label = ilGenerator.DefineLabel();
+				ilGenerator.Emit(OpCodes.Br_S, label);
+				ilGenerator.MarkLabel(label);
+				ilGenerator.Emit(OpCodes.Ldloc, 1);
+			}
+			else
+			{
+				ilGenerator.Emit(OpCodes.Pop);
+			}
+
+
+			ilGenerator.Emit(OpCodes.Ret);
+		}
+            
+        private void EmitInvokeMethod(MethodBuilder methodBuilder)
+        {
+            ILGenerator ilGenerator = methodBuilder.GetILGenerator();
+
+
+            Type type = methodBuilder.ReturnType;
+            if (methodBuilder.ReturnType != typeof(void))
+            {
+                ilGenerator.DeclareLocal(methodBuilder.ReturnType);
+                
+                if (methodBuilder.ReturnType.GetTypeInfo().IsValueType)
+                {
+                    LocalBuilder a = ilGenerator.DeclareLocal(methodBuilder.ReturnType);
+                    ConstructorInfo ci = typeof(Int32).GetConstructor(System.Type.EmptyTypes);
+                    ilGenerator.Emit(OpCodes.Newobj, ci); // Store "5" ...
+                    ilGenerator.Emit(OpCodes.Stloc, a);  // ... in "a".
+                    ilGenerator.Emit(OpCodes.Ldloc, a);  // Load "a" ...
+   
+                }
+            }
+
+            ilGenerator.Emit(OpCodes.Ret);
+        }
+            
+            
+		private static OpCode ConvertTypeToOpCode( Type type )
+		{
+			if (type.GetTypeInfo().IsEnum)
+			{
+                /*
+				System.Enum baseType = (System.Enum) Activator.CreateInstance( type );
+				TypeCode code = baseType.GetTypeCode();
+				
+				switch(code)
+				{
+					case TypeCode.Byte:
+						type = typeof(Byte);
+						break;
+					case TypeCode.Int16:
+						type = typeof(Int16);
+						break;
+					case TypeCode.Int32:
+						type = typeof(Int32);
+						break;
+					case TypeCode.Int64:
+						type = typeof(Int64);
+						break;
+				}
+
+				return ConvertTypeToOpCode( type );
+                */
+                
+                throw new NotImplementedException("Enums are not supported yet.");
+			}
+
+			if ( type.Equals( typeof(Int32) ) )
+			{
+				return OpCodes.Ldind_I4;
+			}
+			else if ( type.Equals( typeof(Int16) ) )
+			{
+				return OpCodes.Ldind_I2;
+			}
+			else if ( type.Equals( typeof(Int64) ) )
+			{
+				return OpCodes.Ldind_I8;
+			}
+			else if ( type.Equals( typeof(Single) ) )
+			{
+				return OpCodes.Ldind_R4;
+			}
+			else if ( type.Equals( typeof(Double) ) )
+			{
+				return OpCodes.Ldind_R8;
+			}
+			else if ( type.Equals( typeof(UInt16) ) )
+			{
+				return OpCodes.Ldind_U2;
+			}
+			else if ( type.Equals( typeof(UInt32) ) )
+			{
+				return OpCodes.Ldind_U4;
+			}
+			else if ( type.Equals( typeof(Boolean) ) )
+			{
+				return OpCodes.Ldind_I4;
+			}
+			else
+			{
+				throw new ArgumentException("Type " + type + " could not be converted to a OpCode");
+			}
+		}
+            
+        object GetDefaultValue(Type t)
+        {
+            if (t.GetTypeInfo().IsValueType)
+            {
+                return Activator.CreateInstance(t);
+            }
+        
+            return null;
         }
             
         private static Type[] ParamTypes(ParameterInfo[] parms, bool noByRef)

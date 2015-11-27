@@ -5,5 +5,7 @@ namespace SunLine.EasyMoq.Tests
 		void SimplestMethod();
 		
 		int MethodReturnsInt();
+		
+		string MethodReturnsString();
 	}
 }

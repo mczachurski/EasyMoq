@@ -40,26 +40,45 @@ namespace SunLine.EasyMoq.Tests
             
             mock.Object.SimplestMethod();
         }
-        
+                
         [Fact]
         public void MockObjectMustCanCallMethodReturningInt()
         {
             var mock = new Mock<IFakeProxyInterface>();
-            
-            mock.Setup(x => x.MethodReturnsInt()).Returns(() => 666);
+            mock.Setup(x => x.MethodReturnsInt());
 
             mock.Object.MethodReturnsInt();
+        }
+        
+        [Fact]
+        public void MockObjectMustReturnExpectedInt()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodReturnsInt()).Returns(() => 666);
+
+            int number = mock.Object.MethodReturnsInt();
+
+            Assert.Equal(666, number);
+        }
+
+        [Fact]
+        public void MockObjectMustCanCallMethodReturningString()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodReturnsString());
+
+            mock.Object.MethodReturnsString();
         }
         
         [Fact]
         public void MockObjectMustReturnExpectedString()
         {
             var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodReturnsInt()).Returns(() =>666);
+            mock.Setup(x => x.MethodReturnsString()).Returns(() => "text");
 
-            var number = mock.Object.MethodReturnsInt();
-
-            Assert.Equal(666, number);
+            string text = mock.Object.MethodReturnsString();
+            
+            Assert.Equal("text", text);
         }
     }
 }

@@ -12,6 +12,8 @@ namespace SunLine.EasyMoq.Core
         
         private Type _objectType;
             
+        private readonly IList<ISetupBuilder> _setupBuilders;
+            
         public TMock Object {
             get {
                 if(_object == null)
@@ -37,6 +39,7 @@ namespace SunLine.EasyMoq.Core
         
         public Mock()
         {
+            _setupBuilders = new List<ISetupBuilder>();
         }
         
         private void GenerateProxyObject()
@@ -63,13 +66,13 @@ namespace SunLine.EasyMoq.Core
             _object = (TMock) Activator.CreateInstance(_objectType);
         }
         
+        
         public SetupBuilder<TMock, TResult> Setup<TResult>(Expression<Func<TMock, TResult>> expression)
-		{
-            //var compiled =  expression.Compile();
-            //var methodInfo = compiled.GetMethodInfo();
-            //throw new ArgumentException("Method info: " + methodInfo.ToString());
+		{                    
+			var setupBuilder = new SetupBuilder<TMock, TResult>(this, expression);
+            _setupBuilders.Add(setupBuilder);
             
-			return new SetupBuilder<TMock, TResult>(this, expression);
+            return setupBuilder;
 		}
         
         private void AddMethodImpl(TypeBuilder typeBuilder, MethodInfo methodInfo)
@@ -96,7 +99,6 @@ namespace SunLine.EasyMoq.Core
                 
                 if (methodBuilder.ReturnType.GetTypeInfo().IsValueType)
                 {
-                    
                     LocalBuilder a = ilGenerator.DeclareLocal(methodBuilder.ReturnType);
                     ilGenerator.Emit(ConvertTypeToOpCode(methodBuilder.ReturnType), 0);
                     ilGenerator.Emit(OpCodes.Stloc, a);

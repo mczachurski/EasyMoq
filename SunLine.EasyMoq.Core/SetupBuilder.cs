@@ -4,14 +4,7 @@ using System.Linq.Expressions;
 
 namespace SunLine.EasyMoq.Core
 {
-    public interface ISetupBuilder
-	{
-		string MethodName { get; }
-		Type[] MethodParameters { get; }
-		Type ReturnType { get; }
-	}
-	
-    public class SetupBuilder<TMock, TResult> : ISetupBuilder where TMock : class
+    public class SetupBuilder<TMock, TResult> where TMock : class
 	{
         private readonly ProxyTypeBuilder _proxyTypeBuilder;
         private readonly Expression<Func<TMock, TResult>> _expression;

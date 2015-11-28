@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SunLine.EasyMoq.Core
 {
@@ -43,18 +44,22 @@ namespace SunLine.EasyMoq.Core
 			if(methodCallExpressions != null)
 			{
 				string methodName = methodCallExpressions.Method.Name;
-				Type[] methodParameters = methodCallExpressions.Method.GetParameters().Select(x => x.ParameterType).ToArray();
-				
+				Type[] methodParameters = methodCallExpressions.Method.GetParameters().Select(x => x.ParameterType).ToArray();	
 				_proxyTypeBuilder.MockMethod<TResult>(methodName, methodParameters, ReturnValue);
+
+			    return;
 			}
 			
-			var memberExpression = _expression.Body as System.Linq.Expressions.MemberExpression;
-			if(memberExpression != null)
-			{
-				string propertyName = memberExpression.Member.Name;
-					
-				_proxyTypeBuilder.MockProperty<TResult>(propertyName, ReturnValue);
-			}
+			var memberExpression = _expression.Body as MemberExpression;
+		    var propertyInfo = memberExpression?.Member as PropertyInfo;
+		    if (propertyInfo != null)
+		    {
+		        string propertyName = propertyInfo.GetMethod.Name;
+                _proxyTypeBuilder.MockMethod<TResult>(propertyName, new Type[] { }, ReturnValue);
+                return;
+		    }
+
+		    throw new NotSupportedException($"Expression {_expression} is not supported.");
 		}
 		
         private void SetReturnDelegate(Func<TResult> returnExpression)

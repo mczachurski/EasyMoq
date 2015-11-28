@@ -10,9 +10,7 @@ namespace SunLine.EasyMoq.Core
         private readonly TypeBuilder _typeBuilder;
         private readonly Type _mockInterface;
         private readonly IList<MethodInfo> _implementedMethods;
-        
         public static Dictionary<string, object> _returnedObjects = new Dictionary<string, object>();
-         
         
         public ProxyTypeBuilder(Type mockInterface)
         {                 
@@ -150,34 +148,11 @@ namespace SunLine.EasyMoq.Core
             return methodInfo;
         }
 
-		private static OpCode ConvertTypeToOpCode( Type type )
+		private static OpCode ConvertTypeToOpCode(Type type)
 		{
 			if (type.GetTypeInfo().IsEnum)
 			{
-                /*
-				System.Enum baseType = (System.Enum) Activator.CreateInstance( type );
-				TypeCode code = baseType.GetTypeCode();
-				
-				switch(code)
-				{
-					case TypeCode.Byte:
-						type = typeof(Byte);
-						break;
-					case TypeCode.Int16:
-						type = typeof(Int16);
-						break;
-					case TypeCode.Int32:
-						type = typeof(Int32);
-						break;
-					case TypeCode.Int64:
-						type = typeof(Int64);
-						break;
-				}
-
-				return ConvertTypeToOpCode( type );
-                */
-                
-                throw new NotImplementedException("Enums are not supported yet.");
+                return ConvertTypeToOpCode(typeof(Int32));
 			}
 
 			if ( type.Equals( typeof(Int32) ) )

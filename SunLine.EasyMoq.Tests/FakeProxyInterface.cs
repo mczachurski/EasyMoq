@@ -6,6 +6,17 @@ namespace SunLine.EasyMoq.Tests
 		Number = 1
 	}
 	
+	public class SimpleObject
+	{
+		private int _number;
+		
+		public int Number 
+		{
+			get { return _number; }
+			set { _number = value; }	
+		}
+	}
+	
 	public interface IFakeProxyInterface
 	{
 		void SimplestMethod();
@@ -13,5 +24,9 @@ namespace SunLine.EasyMoq.Tests
 		int MethodReturnsInt();
 		
 		string MethodReturnsString();
+		
+		ValueEnum MethodReturnsEnum();
+		
+		SimpleObject MethodReturnsSimpleObject();
 	}
 }

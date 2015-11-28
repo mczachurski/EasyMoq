@@ -80,5 +80,44 @@ namespace SunLine.EasyMoq.Tests
             
             Assert.Equal("text", text);
         }
+        
+        [Fact]
+        public void MockObjectMustCanCallMethodReturningEnum()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodReturnsEnum());
+            
+            mock.Object.MethodReturnsEnum();
+        }
+        
+        [Fact]
+        public void MockObjectMustReturnExpectedEnum()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodReturnsEnum()).Returns(() => ValueEnum.Number);
+            
+            ValueEnum value = mock.Object.MethodReturnsEnum();
+            
+            Assert.Equal(ValueEnum.Number, value);
+        }
+        
+        [Fact]
+        public void MethodObjectMustCanCallMethodReturningObject()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodReturnsSimpleObject());
+            
+            mock.Object.MethodReturnsSimpleObject();
+        }
+        
+        public void MethodObjectMustReturnExpectedObject()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodReturnsSimpleObject()).Returns(() => new SimpleObject { Number = 123 });
+            
+            var simpleObject = mock.Object.MethodReturnsSimpleObject();
+            
+            Assert.Equal(123, simpleObject.Number);
+        }
     }
 }

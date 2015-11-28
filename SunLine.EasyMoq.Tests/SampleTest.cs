@@ -4,8 +4,6 @@ using SunLine.EasyMoq.Tests.Objects;
 
 namespace SunLine.EasyMoq.Tests
 {
-    // see example explanation on xUnit.net website:
-    // https://xunit.github.io/docs/getting-started-dnx.html
     public class SampleTest
     {
         [Fact]
@@ -111,6 +109,7 @@ namespace SunLine.EasyMoq.Tests
             mock.Object.MethodReturnsSimpleObject();
         }
         
+        [Fact]
         public void MethodObjectMustReturnExpectedObject()
         {
             var mock = new Mock<IFakeProxyInterface>();
@@ -119,6 +118,26 @@ namespace SunLine.EasyMoq.Tests
             var simpleObject = mock.Object.MethodReturnsSimpleObject();
             
             Assert.Equal(123, simpleObject.Number);
+        }
+        
+        [Fact]
+        public void MethodObjectMustCanCallMethodWithValueParameter()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodWithValueParameter(12));
+            
+            mock.Object.MethodWithValueParameter(1);
+        }
+        
+        //[Fact]
+        public void MethodObjectMustReturnExpectedInt()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodWithValueParameter(It.IsAny<int>())).Returns(() => 24);
+            
+            int value = mock.Object.MethodWithValueParameter(1);
+            
+            Assert.Equal(24, value);
         }
     }
 }

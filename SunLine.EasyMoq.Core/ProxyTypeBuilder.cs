@@ -17,13 +17,7 @@ namespace SunLine.EasyMoq.Core
             _implementedMethods = new List<MethodInfo>();
             _mockInterface = mockInterface;
             
-            var assemblyName = new AssemblyName("SunLine.EasyMoq.ProxyAssembly");
-            assemblyName.Version = new Version(1, 0, 0);
-            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-            
-            var moduleBuilder = assemblyBuilder.DefineDynamicModule("SunLine.EasyMoq.ProxyAssembly");
-            _typeBuilder = moduleBuilder.DefineType(mockInterface.Name + "Proxy", TypeAttributes.Public);
-            
+            _typeBuilder = ProxyAssemblyBuilder.Instance.CreateTypeBuilder(mockInterface);
             ConstructorBuilder constructor = _typeBuilder.DefineDefaultConstructor(MethodAttributes.Public);
             
             _typeBuilder.AddInterfaceImplementation(mockInterface);
@@ -88,10 +82,10 @@ namespace SunLine.EasyMoq.Core
             {                
                 if (methodBuilder.ReturnType.GetTypeInfo().IsValueType)
                 {
-                    LocalBuilder a = ilGenerator.DeclareLocal(methodBuilder.ReturnType);
+                    LocalBuilder val = ilGenerator.DeclareLocal(methodBuilder.ReturnType);
                     ilGenerator.Emit(ConvertTypeToOpCode(methodBuilder.ReturnType), 0);
-                    ilGenerator.Emit(OpCodes.Stloc, a);
-                    ilGenerator.Emit(OpCodes.Ldloc, a);
+                    ilGenerator.Emit(OpCodes.Stloc, val);
+                    ilGenerator.Emit(OpCodes.Ldloc, val);
                 }
                 else
                 {
@@ -142,13 +136,13 @@ namespace SunLine.EasyMoq.Core
             ilGenerator.Emit(OpCodes.Ret);
         }
         
-        public MethodInfo GetMethodInfo(string name, Type[] parameters)
+        private MethodInfo GetMethodInfo(string name, Type[] parameters)
         {
             MethodInfo methodInfo = _mockInterface.GetRuntimeMethod(name, parameters);
             return methodInfo;
         }
 
-		private static OpCode ConvertTypeToOpCode(Type type)
+		private OpCode ConvertTypeToOpCode(Type type)
 		{
 			if (type.GetTypeInfo().IsEnum)
 			{
@@ -193,7 +187,7 @@ namespace SunLine.EasyMoq.Core
 			}
 		}
             
-        private static Type[] ParamTypes(ParameterInfo[] parms, bool noByRef)
+        private Type[] ParamTypes(ParameterInfo[] parms, bool noByRef)
         {
             Type[] types = new Type[parms.Length];
             for (int i = 0; i < parms.Length; i++)

@@ -31,6 +31,12 @@ namespace SunLine.EasyMoq.Core
 			MockImplementation();
 		}
 		
+		public void Throws<T>() where T : Exception
+		{
+			Exception exception = (T) Activator.CreateInstance(typeof(T));
+			Throws(exception);
+		}
+		
 		protected virtual void MockImplementation()
 		{			
 			var methodCallExpressions = _expression as MethodCallExpression;			

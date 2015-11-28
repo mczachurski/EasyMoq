@@ -31,13 +31,15 @@ namespace SunLine.EasyMoq.Core
         public void MockMethod<TResult>(string name, Type[] parameters, TResult returnValue)
         {
             MethodInfo methodInfo = GetMethodInfo(name, parameters);
-            AddMethodImplementation<TResult>(methodInfo, returnValue);
+            AddMethodImplementation(methodInfo, 
+                (MethodBuilder methodBuilder) => { EmitInvokeMethod<TResult>(methodBuilder, returnValue); });
         }
                 
         public void MockMethod(string name, Type[] parameters, Exception exception)
         {
             MethodInfo methodInfo = GetMethodInfo(name, parameters);
-            AddMethodImplementation(methodInfo, exception);
+            AddMethodImplementation(methodInfo, 
+                (MethodBuilder methodBuilder) => { EmitInvokeMethodThowException(methodBuilder, exception); });
         }
                 
         public void MockNotImplementedMethods()
@@ -46,12 +48,13 @@ namespace SunLine.EasyMoq.Core
             { 
                 if(!_implementedMethods.Contains(methodInfo))
                 {
-                    AddMethodImplementation(methodInfo);
+                    AddMethodImplementation(methodInfo, 
+                        (MethodBuilder methodBuilder) => { EmitInvokeMethod(methodBuilder); });
                 } 
             } 
         }
 
-        private void AddMethodImplementation(MethodInfo methodInfo, Exception exception)
+        private void AddMethodImplementation(MethodInfo methodInfo, Action<MethodBuilder> emitInvokeMethodAction)
         {
             ParameterInfo[] parameters = methodInfo.GetParameters();
             Type[] paramTypes = ParamTypes(parameters, false);
@@ -59,35 +62,7 @@ namespace SunLine.EasyMoq.Core
             MethodBuilder methodBuilder = _typeBuilder.DefineMethod(methodInfo.Name, 
                 MethodAttributes.Public | MethodAttributes.Virtual, methodInfo.ReturnType, paramTypes);
             
-            EmitInvokeMethodThowException(methodBuilder, exception);
-            
-            _typeBuilder.DefineMethodOverride(methodBuilder, methodInfo);
-            _implementedMethods.Add(methodInfo);
-        }
-
-        private void AddMethodImplementation(MethodInfo methodInfo)
-        {
-            ParameterInfo[] parameters = methodInfo.GetParameters();
-            Type[] paramTypes = ParamTypes(parameters, false);
-            
-            MethodBuilder methodBuilder = _typeBuilder.DefineMethod(methodInfo.Name, 
-                MethodAttributes.Public | MethodAttributes.Virtual, methodInfo.ReturnType, paramTypes);
-            
-            EmitInvokeMethod(methodBuilder);
-            
-            _typeBuilder.DefineMethodOverride(methodBuilder, methodInfo);
-            _implementedMethods.Add(methodInfo);
-        }
-        
-        private void AddMethodImplementation<TResult>(MethodInfo methodInfo, TResult returnValue)
-        {
-            ParameterInfo[] parameters = methodInfo.GetParameters();
-            Type[] paramTypes = ParamTypes(parameters, false);
-            
-            MethodBuilder methodBuilder = _typeBuilder.DefineMethod(methodInfo.Name, 
-                MethodAttributes.Public | MethodAttributes.Virtual, methodInfo.ReturnType, paramTypes);
-            
-            EmitInvokeMethod<TResult>(methodBuilder, returnValue);
+            emitInvokeMethodAction.Invoke(methodBuilder);
             
             _typeBuilder.DefineMethodOverride(methodBuilder, methodInfo);
             _implementedMethods.Add(methodInfo);

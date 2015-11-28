@@ -161,5 +161,15 @@ namespace SunLine.EasyMoq.Tests
 
 			Assert.Throws<FormatException>(() => mock.Object.SimplestMethod());
 		}
+        
+		[Fact]
+		public void ThrowsIfExpectationThrowsWithGenericsExceptionType()
+		{
+			var mock = new Mock<IFakeProxyInterface>();
+
+			mock.Setup(x => x.SimplestMethod()).Throws<FormatException>();
+
+			Assert.Throws<FormatException>(() => mock.Object.SimplestMethod());
+		}
     }
 }

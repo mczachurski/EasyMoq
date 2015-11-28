@@ -1,4 +1,5 @@
 using Xunit;
+using System;
 using SunLine.EasyMoq.Core;
 using SunLine.EasyMoq.Tests.Objects;
 
@@ -61,6 +62,17 @@ namespace SunLine.EasyMoq.Tests
         }
 
         [Fact]
+        public void MockObjectMustReturnExpectedIntWhenWeUsesItIsAny()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.MethodWithValueParameter(It.IsAny<int>())).Returns(24);
+            
+            int value = mock.Object.MethodWithValueParameter(1);
+            
+            Assert.Equal(24, value);
+        }
+
+        [Fact]
         public void MockObjectMustCanCallMethodReturningString()
         {
             var mock = new Mock<IFakeProxyInterface>();
@@ -101,7 +113,7 @@ namespace SunLine.EasyMoq.Tests
         }
         
         [Fact]
-        public void MethodObjectMustCanCallMethodReturningObject()
+        public void MockObjectMustCanCallMethodReturningObject()
         {
             var mock = new Mock<IFakeProxyInterface>();
             mock.Setup(x => x.MethodReturnsSimpleObject());
@@ -110,7 +122,7 @@ namespace SunLine.EasyMoq.Tests
         }
         
         [Fact]
-        public void MethodObjectMustReturnExpectedObject()
+        public void MockObjectMustReturnExpectedObject()
         {
             var mock = new Mock<IFakeProxyInterface>();
             mock.Setup(x => x.MethodReturnsSimpleObject()).Returns(new SimpleObject { Number = 123 });
@@ -121,7 +133,7 @@ namespace SunLine.EasyMoq.Tests
         }
         
         [Fact]
-        public void MethodObjectMustCanCallMethodWithValueParameter()
+        public void MockObjectMustCanCallMethodWithValueParameter()
         {
             var mock = new Mock<IFakeProxyInterface>();
             mock.Setup(x => x.MethodWithValueParameter(12));
@@ -130,18 +142,7 @@ namespace SunLine.EasyMoq.Tests
         }
         
         [Fact]
-        public void MethodObjectMustReturnExpectedInt()
-        {
-            var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodWithValueParameter(It.IsAny<int>())).Returns(24);
-            
-            int value = mock.Object.MethodWithValueParameter(1);
-            
-            Assert.Equal(24, value);
-        }
-        
-        [Fact]
-        public void Property()
+        public void MockObjectMustReturnExpectedValueForProperty()
         {
             var mock = new Mock<IFakeProxyInterface>();
             mock.Setup(x => x.IntegerProperty).Returns(10);
@@ -150,5 +151,15 @@ namespace SunLine.EasyMoq.Tests
             
             Assert.Equal(10, value);
         }
+        
+		[Fact]
+		public void ThrowsIfExpectationThrows()
+		{
+			var mock = new Mock<IFakeProxyInterface>();
+
+			mock.Setup(x => x.SimplestMethod()).Throws(new FormatException());
+
+			Assert.Throws<FormatException>(() => mock.Object.SimplestMethod());
+		}
     }
 }

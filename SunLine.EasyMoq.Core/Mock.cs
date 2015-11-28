@@ -41,9 +41,14 @@ namespace SunLine.EasyMoq.Core
     
         public SetupBuilder<TMock, TResult> Setup<TResult>(Expression<Func<TMock, TResult>> expression)
 		{                    
-			var setupBuilder = new SetupBuilder<TMock, TResult>(this._proxyTypeBuilder, expression);            
+			var setupBuilder = new SetupBuilder<TMock, TResult>(_proxyTypeBuilder, expression);            
             return setupBuilder;
 		}
+    
+        public SetupBuilder<TMock> Setup(Expression<Action<TMock>> expression)
+        {
+            return new SetupBuilder<TMock>(_proxyTypeBuilder, expression);
+        }
     
         private void GenerateProxyObject()
         {          

@@ -34,6 +34,12 @@ namespace SunLine.EasyMoq.Core
             AddMethodImplementation<TResult>(methodInfo, returnValue);
         }
                 
+        public void MockMethod(string name, Type[] parameters, Exception exception)
+        {
+            MethodInfo methodInfo = GetMethodInfo(name, parameters);
+            AddMethodImplementation(methodInfo, exception);
+        }
+                
         public void MockNotImplementedMethods()
         {
             foreach (MethodInfo methodInfo in _mockInterface.GetRuntimeMethods()) 
@@ -43,6 +49,20 @@ namespace SunLine.EasyMoq.Core
                     AddMethodImplementation(methodInfo);
                 } 
             } 
+        }
+
+        private void AddMethodImplementation(MethodInfo methodInfo, Exception exception)
+        {
+            ParameterInfo[] parameters = methodInfo.GetParameters();
+            Type[] paramTypes = ParamTypes(parameters, false);
+            
+            MethodBuilder methodBuilder = _typeBuilder.DefineMethod(methodInfo.Name, 
+                MethodAttributes.Public | MethodAttributes.Virtual, methodInfo.ReturnType, paramTypes);
+            
+            EmitInvokeMethodThowException(methodBuilder, exception);
+            
+            _typeBuilder.DefineMethodOverride(methodBuilder, methodInfo);
+            _implementedMethods.Add(methodInfo);
         }
 
         private void AddMethodImplementation(MethodInfo methodInfo)
@@ -104,6 +124,17 @@ namespace SunLine.EasyMoq.Core
             }
             
             return null;
+        }
+        
+        private void EmitInvokeMethodThowException(MethodBuilder methodBuilder, Exception exception)
+        {
+            ILGenerator ilGenerator = methodBuilder.GetILGenerator();
+            var keyGuid = Guid.NewGuid().ToString();
+            _returnedObjects.Add(keyGuid, exception);
+        
+            ilGenerator.Emit(OpCodes.Ldstr, keyGuid);
+            ilGenerator.Emit(OpCodes.Call, typeof(ProxyTypeBuilder).GetMethod("GetReturnedObject", new Type[] { typeof(string) }));
+            ilGenerator.Emit(OpCodes.Throw);
         }
         
         private void EmitInvokeMethod<TResult>(MethodBuilder methodBuilder, TResult returnValue)

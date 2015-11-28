@@ -5,10 +5,64 @@ using System.Reflection;
 
 namespace SunLine.EasyMoq.Core
 {
-    public class SetupBuilder<TMock, TResult> where TMock : class
+	public class SetupBuilder<TMock> 
+		where TMock : class
 	{
-        private readonly ProxyTypeBuilder _proxyTypeBuilder;
-        private readonly Expression<Func<TMock, TResult>> _expression;
+		protected Expression _expression;
+		protected readonly ProxyTypeBuilder _proxyTypeBuilder;
+		protected Exception _throwsException;
+		protected string _methodName;
+		protected Type[] _parameters;
+		
+		protected SetupBuilder(ProxyTypeBuilder proxyTypeBuilder)
+		{
+			_proxyTypeBuilder = proxyTypeBuilder;
+		}
+		
+		public SetupBuilder(ProxyTypeBuilder proxyTypeBuilder, Expression<Action<TMock>> expression)
+			: this(proxyTypeBuilder)
+		{
+			_expression = expression.Body;
+		}
+		
+		public void Throws(Exception exception)
+		{
+			_throwsException = exception;
+			MockImplementation();
+		}
+		
+		protected virtual void MockImplementation()
+		{			
+			var methodCallExpressions = _expression as MethodCallExpression;			
+			if(methodCallExpressions != null)
+			{
+				_methodName = methodCallExpressions.Method.Name;
+				_parameters = methodCallExpressions.Method.GetParameters().Select(x => x.ParameterType).ToArray();
+			}
+			
+			var memberExpression = _expression as MemberExpression;
+		    var propertyInfo = memberExpression?.Member as PropertyInfo;
+		    if (propertyInfo != null)
+		    {
+		        _methodName = propertyInfo.GetMethod.Name;
+                _parameters = new Type[] { };
+		    }
+			
+			if(string.IsNullOrWhiteSpace(_methodName))
+			{
+				throw new NotSupportedException($"Expression {_expression} is not supported.");	
+			}
+			
+			if(_throwsException != null)
+			{
+				_proxyTypeBuilder.MockMethod(_methodName, _parameters, _throwsException);
+			}
+		}
+	}
+	
+    public class SetupBuilder<TMock, TResult> : SetupBuilder<TMock> 
+		where TMock : class
+	{
         private Func<TResult> _returnExpression; 
 		
 		public Type ReturnType
@@ -22,9 +76,9 @@ namespace SunLine.EasyMoq.Core
 		}
 		
         public SetupBuilder(ProxyTypeBuilder proxyTypeBuilder, Expression<Func<TMock, TResult>> expression)
+			: base(proxyTypeBuilder)
         {
-            _proxyTypeBuilder = proxyTypeBuilder;
-            _expression = expression;
+            _expression = expression.Body;
         }
         
         public void Returns(Func<TResult> returnExpression)
@@ -37,29 +91,15 @@ namespace SunLine.EasyMoq.Core
 		{
 			Returns(() => value);
 		}
-        
-		private void MockImplementation()
+		
+		protected override void MockImplementation()
 		{
-			var methodCallExpressions = _expression.Body as MethodCallExpression;			
-			if(methodCallExpressions != null)
-			{
-				string methodName = methodCallExpressions.Method.Name;
-				Type[] methodParameters = methodCallExpressions.Method.GetParameters().Select(x => x.ParameterType).ToArray();	
-				_proxyTypeBuilder.MockMethod<TResult>(methodName, methodParameters, ReturnValue);
-
-			    return;
-			}
+			base.MockImplementation();
 			
-			var memberExpression = _expression.Body as MemberExpression;
-		    var propertyInfo = memberExpression?.Member as PropertyInfo;
-		    if (propertyInfo != null)
-		    {
-		        string propertyName = propertyInfo.GetMethod.Name;
-                _proxyTypeBuilder.MockMethod<TResult>(propertyName, new Type[] { }, ReturnValue);
-                return;
-		    }
-
-		    throw new NotSupportedException($"Expression {_expression} is not supported.");
+			if(_returnExpression != null)
+			{
+				_proxyTypeBuilder.MockMethod<TResult>(_methodName, _parameters, ReturnValue);
+			}
 		}
 		
         private void SetReturnDelegate(Func<TResult> returnExpression)

@@ -10,16 +10,6 @@ namespace SunLine.EasyMoq.Core
         private readonly Expression<Func<TMock, TResult>> _expression;
         private Func<TResult> _returnExpression; 
 		
-		public string MethodName
-		{
-			get; private set;
-		}
-		
-		public Type[] MethodParameters
-		{
-			get; private set;
-		}
-		
 		public Type ReturnType
 		{
 			get; private set;
@@ -34,16 +24,12 @@ namespace SunLine.EasyMoq.Core
         {
             _proxyTypeBuilder = proxyTypeBuilder;
             _expression = expression;
-			
-			var call = (MethodCallExpression)_expression.Body;
-			MethodName = call.Method.Name;
-			MethodParameters = call.Method.GetParameters().Select(x => x.ParameterType).ToArray();
         }
         
         public void Returns(Func<TResult> returnExpression)
 		{
 			SetReturnDelegate(returnExpression);
-			MockMethod();
+			MockImplementation();
 		}
 
 		public void Returns(TResult value)
@@ -51,9 +37,24 @@ namespace SunLine.EasyMoq.Core
 			Returns(() => value);
 		}
         
-		private void MockMethod()
+		private void MockImplementation()
 		{
-			_proxyTypeBuilder.MockMethod<TResult>(MethodName, MethodParameters, ReturnValue);
+			var methodCallExpressions = _expression.Body as MethodCallExpression;			
+			if(methodCallExpressions != null)
+			{
+				string methodName = methodCallExpressions.Method.Name;
+				Type[] methodParameters = methodCallExpressions.Method.GetParameters().Select(x => x.ParameterType).ToArray();
+				
+				_proxyTypeBuilder.MockMethod<TResult>(methodName, methodParameters, ReturnValue);
+			}
+			
+			var memberExpression = _expression.Body as System.Linq.Expressions.MemberExpression;
+			if(memberExpression != null)
+			{
+				string propertyName = memberExpression.Member.Name;
+					
+				_proxyTypeBuilder.MockProperty<TResult>(propertyName, ReturnValue);
+			}
 		}
 		
         private void SetReturnDelegate(Func<TResult> returnExpression)

@@ -139,5 +139,16 @@ namespace SunLine.EasyMoq.Tests
             
             Assert.Equal(24, value);
         }
+        
+        [Fact]
+        public void Property()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            mock.Setup(x => x.IntegerProperty).Returns(10);
+            
+            int value = mock.Object.IntegerProperty;
+            
+            Assert.Equal(10, value);
+        }
     }
 }

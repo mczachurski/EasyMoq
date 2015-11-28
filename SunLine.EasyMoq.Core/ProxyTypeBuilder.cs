@@ -34,6 +34,12 @@ namespace SunLine.EasyMoq.Core
             AddMethodImplementation<TResult>(methodInfo, returnValue);
         }
         
+        public void MockProperty<TResult>(string name, TResult returnValue)
+        {
+            MethodInfo methodInfo = GetMethodInfo(name);
+            AddMethodImplementation<TResult>(methodInfo, returnValue);
+        }
+        
         public void MockNotImplementedMethods()
         {
             foreach (MethodInfo methodInfo in _mockInterface.GetRuntimeMethods()) 
@@ -134,6 +140,12 @@ namespace SunLine.EasyMoq.Core
             }
         
             ilGenerator.Emit(OpCodes.Ret);
+        }
+        
+        private MethodInfo GetMethodInfo(string name)
+        {
+            MethodInfo methodInfo = _mockInterface.GetRuntimeMethod(name, new Type[]{});
+            return methodInfo;
         }
         
         private MethodInfo GetMethodInfo(string name, Type[] parameters)

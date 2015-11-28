@@ -2,6 +2,8 @@ namespace SunLine.EasyMoq.Tests.Objects
 {	
 	public interface IFakeProxyInterface
 	{
+		int IntegerProperty { get; set; }
+		
 		void SimplestMethod();
 		
 		int MethodReturnsInt();

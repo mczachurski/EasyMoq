@@ -1,5 +1,6 @@
 using Xunit;
 using SunLine.EasyMoq.Core;
+using SunLine.EasyMoq.Tests.Objects;
 
 namespace SunLine.EasyMoq.Tests
 {

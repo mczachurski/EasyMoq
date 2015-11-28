@@ -37,7 +37,7 @@ namespace SunLine.EasyMoq.Core
 			
 			var call = (MethodCallExpression)_expression.Body;
 			MethodName = call.Method.Name;
-			MethodParameters = call.Method.GetParameters().Select(x => x.GetType()).ToArray();
+			MethodParameters = call.Method.GetParameters().Select(x => x.ParameterType).ToArray();
         }
         
         public void Returns(Func<TResult> returnExpression)

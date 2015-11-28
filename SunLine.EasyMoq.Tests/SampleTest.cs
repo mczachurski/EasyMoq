@@ -53,7 +53,7 @@ namespace SunLine.EasyMoq.Tests
         public void MockObjectMustReturnExpectedInt()
         {
             var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodReturnsInt()).Returns(() => 666);
+            mock.Setup(x => x.MethodReturnsInt()).Returns(666);
 
             int number = mock.Object.MethodReturnsInt();
 
@@ -73,7 +73,7 @@ namespace SunLine.EasyMoq.Tests
         public void MockObjectMustReturnExpectedString()
         {
             var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodReturnsString()).Returns(() => "text");
+            mock.Setup(x => x.MethodReturnsString()).Returns("text");
 
             string text = mock.Object.MethodReturnsString();
             
@@ -93,7 +93,7 @@ namespace SunLine.EasyMoq.Tests
         public void MockObjectMustReturnExpectedEnum()
         {
             var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodReturnsEnum()).Returns(() => ValueEnum.Number);
+            mock.Setup(x => x.MethodReturnsEnum()).Returns(ValueEnum.Number);
             
             ValueEnum value = mock.Object.MethodReturnsEnum();
             
@@ -113,7 +113,7 @@ namespace SunLine.EasyMoq.Tests
         public void MethodObjectMustReturnExpectedObject()
         {
             var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodReturnsSimpleObject()).Returns(() => new SimpleObject { Number = 123 });
+            mock.Setup(x => x.MethodReturnsSimpleObject()).Returns(new SimpleObject { Number = 123 });
             
             var simpleObject = mock.Object.MethodReturnsSimpleObject();
             
@@ -129,11 +129,11 @@ namespace SunLine.EasyMoq.Tests
             mock.Object.MethodWithValueParameter(1);
         }
         
-        //[Fact]
+        [Fact]
         public void MethodObjectMustReturnExpectedInt()
         {
             var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodWithValueParameter(It.IsAny<int>())).Returns(() => 24);
+            mock.Setup(x => x.MethodWithValueParameter(It.IsAny<int>())).Returns(24);
             
             int value = mock.Object.MethodWithValueParameter(1);
             

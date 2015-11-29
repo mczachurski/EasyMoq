@@ -10,17 +10,20 @@ namespace SunLine.EasyMoq.Core
         private readonly TypeBuilder _typeBuilder;
         private readonly Type _mockInterface;
         private readonly IList<MethodInfo> _implementedMethods;
-        public static Dictionary<string, object> _returnedObjects = new Dictionary<string, object>();
+        private readonly Interceptor _interceptor;
+        private const string _interceptorFieldName = "_interceptor";
+        private const string _getReturnedObjectMethodName = "GetReturnedObject";
         
-        public ProxyTypeBuilder(Type mockInterface)
+        public ProxyTypeBuilder(Type mockInterface, Interceptor interceptor)
         {                 
             _implementedMethods = new List<MethodInfo>();
             _mockInterface = mockInterface;
+            _interceptor = interceptor;
             
-            _typeBuilder = ProxyAssemblyBuilder.Instance.CreateTypeBuilder(mockInterface);
-            ConstructorBuilder constructor = _typeBuilder.DefineDefaultConstructor(MethodAttributes.Public);
+            _typeBuilder = ProxyAssemblyBuilder.Instance.CreateTypeBuilder(_mockInterface);
+            _typeBuilder.AddInterfaceImplementation(_mockInterface);
             
-            _typeBuilder.AddInterfaceImplementation(mockInterface);
+            AddConstructor();
         }
         
         public TypeInfo CreateTypeInfo()
@@ -52,6 +55,14 @@ namespace SunLine.EasyMoq.Core
                         (MethodBuilder methodBuilder) => { EmitInvokeMethod(methodBuilder); });
                 } 
             } 
+        }
+
+        private void AddConstructor()
+        {
+            ConstructorBuilder constructor = _typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Any, 
+                new Type[] { typeof(Interceptor) });
+            
+            EmitConstructor(constructor);
         }
 
         private void AddMethodImplementation(MethodInfo methodInfo, Action<MethodBuilder> emitInvokeMethodAction)
@@ -90,25 +101,18 @@ namespace SunLine.EasyMoq.Core
         
             ilGenerator.Emit(OpCodes.Ret);
         }
-        
-        public static object GetReturnedObject(string key)
-        {
-            if(_returnedObjects.ContainsKey(key))
-            {
-                return _returnedObjects[key];
-            }
-            
-            return null;
-        }
-        
+                
         private void EmitInvokeMethodThowException(MethodBuilder methodBuilder, Exception exception)
         {
             ILGenerator ilGenerator = methodBuilder.GetILGenerator();
             var keyGuid = Guid.NewGuid().ToString();
-            _returnedObjects.Add(keyGuid, exception);
+            _interceptor.AddReturnedObject(keyGuid, exception);
+            FieldInfo interceptorFieldInfo = _typeBuilder.GetDeclaredField(_interceptorFieldName);
         
+            ilGenerator.Emit(OpCodes.Ldarg_0);
+            ilGenerator.Emit(OpCodes.Ldfld, interceptorFieldInfo);
             ilGenerator.Emit(OpCodes.Ldstr, keyGuid);
-            ilGenerator.Emit(OpCodes.Call, typeof(ProxyTypeBuilder).GetMethod("GetReturnedObject", new Type[] { typeof(string) }));
+            ilGenerator.Emit(OpCodes.Call, typeof(Interceptor).GetMethod(_getReturnedObjectMethodName, new Type[] { typeof(string) }));
             ilGenerator.Emit(OpCodes.Throw);
         }
         
@@ -116,7 +120,8 @@ namespace SunLine.EasyMoq.Core
         {
             ILGenerator ilGenerator = methodBuilder.GetILGenerator();
             var keyGuid = Guid.NewGuid().ToString();
-            _returnedObjects.Add(keyGuid, returnValue);
+            _interceptor.AddReturnedObject(keyGuid, returnValue);
+            FieldInfo interceptorFieldInfo = _typeBuilder.GetDeclaredField(_interceptorFieldName);
         
             Type type = methodBuilder.ReturnType;
             if (methodBuilder.ReturnType != typeof(void))
@@ -125,8 +130,10 @@ namespace SunLine.EasyMoq.Core
                 {
                     var valObj = ilGenerator.DeclareLocal(typeof(object));
                     
+                    ilGenerator.Emit(OpCodes.Ldarg_0);
+                    ilGenerator.Emit(OpCodes.Ldfld, interceptorFieldInfo);
                     ilGenerator.Emit(OpCodes.Ldstr, keyGuid);
-                    ilGenerator.Emit(OpCodes.Call, typeof(ProxyTypeBuilder).GetMethod("GetReturnedObject", new Type[] { typeof(string) }));
+                    ilGenerator.Emit(OpCodes.Call, typeof(Interceptor).GetMethod(_getReturnedObjectMethodName, new Type[] { typeof(string) }));
                     ilGenerator.Emit(OpCodes.Box, typeof(object));
                     ilGenerator.Emit(OpCodes.Stloc, valObj);
                     ilGenerator.Emit(OpCodes.Ldloc, valObj);
@@ -134,11 +141,24 @@ namespace SunLine.EasyMoq.Core
                 }
                 else
                 {
+                    ilGenerator.Emit(OpCodes.Ldarg_0);
+                    ilGenerator.Emit(OpCodes.Ldfld, interceptorFieldInfo);
                     ilGenerator.Emit(OpCodes.Ldstr, keyGuid);
-                    ilGenerator.Emit(OpCodes.Call, typeof(ProxyTypeBuilder).GetMethod("GetReturnedObject", new Type[] { typeof(string) }));
+                    ilGenerator.Emit(OpCodes.Call, typeof(Interceptor).GetMethod(_getReturnedObjectMethodName, new Type[] { typeof(string) }));
                 }
             }
         
+            ilGenerator.Emit(OpCodes.Ret);
+        }
+        
+        private void EmitConstructor(ConstructorBuilder constructorBuilder)
+        {
+            FieldBuilder fieldBuilder = _typeBuilder.DefineField(_interceptorFieldName, typeof(Interceptor), FieldAttributes.Private);
+
+            ILGenerator ilGenerator = constructorBuilder.GetILGenerator();
+            ilGenerator.Emit(OpCodes.Ldarg_0);
+            ilGenerator.Emit(OpCodes.Ldarg_1);
+            ilGenerator.Emit(OpCodes.Stfld, fieldBuilder);
             ilGenerator.Emit(OpCodes.Ret);
         }
         

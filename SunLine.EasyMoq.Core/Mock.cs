@@ -6,10 +6,9 @@ namespace SunLine.EasyMoq.Core
     public class Mock<TMock> where TMock : class
     {
         private TMock _object;
-        
         private Type _objectType;
-            
         private readonly ProxyTypeBuilder _proxyTypeBuilder;
+        private readonly Interceptor _interceptor;
             
         public TMock Object {
             get {
@@ -36,7 +35,8 @@ namespace SunLine.EasyMoq.Core
         
         public Mock()
         {
-            _proxyTypeBuilder = new ProxyTypeBuilder(typeof(TMock));
+            _interceptor = new Interceptor();
+            _proxyTypeBuilder = new ProxyTypeBuilder(typeof(TMock), _interceptor);
         }
     
         public SetupBuilder<TMock, TResult> Setup<TResult>(Expression<Func<TMock, TResult>> expression)
@@ -54,7 +54,7 @@ namespace SunLine.EasyMoq.Core
         {          
             _proxyTypeBuilder.MockNotImplementedMethods();
             _objectType = _proxyTypeBuilder.CreateTypeInfo().AsType();
-            _object = (TMock) Activator.CreateInstance(_objectType);
+            _object = (TMock) Activator.CreateInstance(_objectType, _interceptor);
         }
     }
 }

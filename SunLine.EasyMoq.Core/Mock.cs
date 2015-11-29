@@ -55,12 +55,7 @@ namespace SunLine.EasyMoq.Core
     
 		public void Verify(Expression<Action<TMock>> expression)
 		{
-			Verify(expression, Times.AtLeastOnce(), null);
-		}
-
-		public void Verify(Expression<Action<TMock>> expression, Times times)
-		{
-			Verify(expression, times, null);
+			Verify(expression, Times.AtLeastOnce());
 		}
 
 		public void Verify(Expression<Action<TMock>> expression, Func<Times> times)
@@ -68,58 +63,33 @@ namespace SunLine.EasyMoq.Core
 			Verify(expression, times());
 		}
 
-		public void Verify(Expression<Action<TMock>> expression, string failMessage)
-		{
-			Verify(expression, Times.AtLeastOnce(), failMessage);
-		}
-
-		public void Verify(Expression<Action<TMock>> expression, Func<Times> times, string failMessage)
-		{
-			Verify(expression, times(), failMessage);
-		}
-
 		public void Verify<TResult>(Expression<Func<TMock, TResult>> expression)
 		{
-			Verify(expression, Times.AtLeastOnce(), null);
-		}
-
-		public void Verify<TResult>(Expression<Func<TMock, TResult>> expression, Times times)
-		{
-			Verify(expression, times, null);
+			Verify(expression, Times.AtLeastOnce());
 		}
 
 		public void Verify<TResult>(Expression<Func<TMock, TResult>> expression, Func<Times> times)
 		{
-			Verify(expression, times(), null);
+			Verify(expression, times());
 		}
 
-		public void Verify<TResult>(Expression<Func<TMock, TResult>> expression, string failMessage)
+		public void Verify<TResult>(Expression<Func<TMock, TResult>> expression, Times times)
 		{
-			Verify(expression, Times.AtLeastOnce(), failMessage);
-		}
+            Guard.NotNull(() => times, times);
 
-		public void Verify<TResult>(Expression<Func<TMock, TResult>> expression, Times times, string failMessage)
-		{
-			Verify(expression, times, failMessage);
-		}
+            var callInfo = expression.GetCallInfo();
+            ThrowIfVerifyNonVirtual(expression, callInfo.Method);
+
+            VerifyCalls(callInfo, expression, times);
+        }
     
-		private void Verify(Expression<Action<TMock>> expression, Times times, string failMessage)
+		public void Verify(Expression<Action<TMock>> expression, Times times)
 		{
 			Guard.NotNull(() => times, times);
 
 			var callInfo = expression.GetCallInfo();
 			ThrowIfVerifyNonVirtual(expression, callInfo.Method);
 			
-			VerifyCalls(callInfo, expression, times);
-		}
-
-		internal void VerifyGet<T, TProperty>(Mock<T> mock, Expression<Func<T, TProperty>> expression, Times times, string failMessage)
-			where T : class
-		{
-			var method = expression.ToPropertyInfo().GetGetMethod(true);
-			ThrowIfVerifyNonVirtual(expression, method);
-
-			var callInfo = new CallInfo { Method = method };
 			VerifyCalls(callInfo, expression, times);
 		}
 		
@@ -134,7 +104,7 @@ namespace SunLine.EasyMoq.Core
 		
 		private static void ThrowVerifyException(Expression expression, Times times, int callCount)
 		{
-			var message = times.GetExceptionMessage("!!!Expected exception!!!", expression.ToString(), callCount);
+			var message = times.GetExceptionMessage("Verification failed.", expression.ToString(), callCount);
 			throw new MockException(MockException.ExceptionReason.VerificationFailed, message);
 		}
 		

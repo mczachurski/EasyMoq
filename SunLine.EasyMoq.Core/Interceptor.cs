@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Linq;
 
 namespace SunLine.EasyMoq.Core
 {
@@ -35,6 +36,36 @@ namespace SunLine.EasyMoq.Core
         
         public MethodInformation GetMethodInformation(CallInfo callInfo)
         {
+            var methods = _methodInformation.ToArray();
+            foreach(var method in methods)
+            {               
+                if(method.Value.Name == callInfo.Method.Name)
+                {
+                    var parameters1 = callInfo.Method.GetParameters().Select(x => x.ParameterType).ToArray();
+                    var parameters2 = method.Value.Parameters;
+                    
+                    if(parameters1.Length != parameters2.Length)
+                    {
+                        continue;
+                    }
+                    
+                    bool sameParameters = true;
+                    for(int i = 0; i < parameters1.Length; i++)
+                    {
+                        if(parameters1[i] != parameters2[i])
+                        {
+                            sameParameters = false;
+                            break;
+                        }
+                    }
+                    
+                    if(sameParameters)
+                    {
+                        return method.Value;
+                    }
+                }
+            }
+            
             return null;
         }
     }

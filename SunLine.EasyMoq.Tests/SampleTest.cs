@@ -173,13 +173,69 @@ namespace SunLine.EasyMoq.Tests
 		}
         
         [Fact]
-        public void MockMethodMustBeCalledExpectedNumberOfTimes()
+        public void MockMethodWithoutParametersMustBeCalledExpectedNumberOfTimes()
         {
             var mock = new Mock<IFakeProxyInterface>();
             
             mock.Object.SimplestMethod();
             
             mock.Verify(m => m.SimplestMethod(), Times.Once());
+        }
+        
+        [Fact]
+        public void MockMethodWithParametersMustBeCalledExpectedNumberOfTimes()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            
+            mock.Object.MethodWithValueParameter(1);
+            mock.Object.MethodWithValueParameter(2);
+            mock.Object.MethodWithValueParameter(3);
+            
+            mock.Verify(m => m.MethodWithValueParameter(It.IsAny<int>()), Times.Exactly(3));
+        }
+        
+        [Fact]
+        public void MockMethodMustBeCalledExpectedNumberOfTimesEvenIfOtherMethodsAreCalled()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            
+            mock.Object.SimplestMethod();
+            mock.Object.MethodWithValueParameter(1);
+            mock.Object.MethodWithValueParameter(2);
+            mock.Object.MethodWithValueParameter(3);
+            mock.Object.MethodReturnsString();
+            
+            mock.Verify(m => m.MethodWithValueParameter(It.IsAny<int>()), Times.Exactly(3));
+        }
+        
+        [Fact]
+        public void MockMustThrowExceptionWhenMethodShouldnBeCalled()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            
+            mock.Object.MethodWithValueParameter(1);
+            
+            Assert.Throws<MockException>(() => mock.Verify(m => m.MethodWithValueParameter(It.IsAny<int>()), Times.Never));
+        }
+        
+        [Fact]
+        public void MockMustThrowExceptionWhenMethodWasntCalled()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            
+            var obj = mock.Object;
+            
+            Assert.Throws<MockException>(() => mock.Verify(m => m.MethodWithValueParameter(It.IsAny<int>()), Times.AtLeastOnce));
+        }
+        
+        [Fact]
+        public void MockPropertyMustBeCalledExpectedNumberOfTimes()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            
+            var integerProperty = mock.Object.IntegerProperty;
+            
+            mock.Verify(x => x.IntegerProperty, Times.Once());
         }
     }
 }

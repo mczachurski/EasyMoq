@@ -11,7 +11,7 @@ namespace SunLine.EasyMoq.Core
 			VerificationFailed,
 			MoreThanOneCall,
 			MoreThanNCalls,
-			SetupNever,
+			SetupNever
 		}
 
 		private ExceptionReason reason;

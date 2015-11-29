@@ -6,9 +6,8 @@ namespace SunLine.EasyMoq.Core
 {
 	public class ProxyAssemblyBuilder
 	{
-		private static volatile ProxyAssemblyBuilder instance;
-   		private static object syncRoot = new Object();
-
+		private static volatile ProxyAssemblyBuilder _instance;
+   		private static object _syncRoot = new Object();
 		private readonly AssemblyBuilder _assemblyBuilder;
 		private readonly ModuleBuilder _moduleBuilder;	   
 
@@ -22,18 +21,18 @@ namespace SunLine.EasyMoq.Core
    		{
       		get 
       		{
-         		if (instance == null) 
+         		if (_instance == null) 
          		{
-            		lock (syncRoot) 
+            		lock (_syncRoot) 
             		{
-               			if (instance == null) 
+               			if (_instance == null) 
 						{
-                  			instance = new ProxyAssemblyBuilder();
+                  			_instance = new ProxyAssemblyBuilder();
 						}
             		}
          		}
 
-         		return instance;
+         		return _instance;
       		}
    		}
 		   

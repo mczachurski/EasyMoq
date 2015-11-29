@@ -171,5 +171,15 @@ namespace SunLine.EasyMoq.Tests
 
 			Assert.Throws<FormatException>(() => mock.Object.SimplestMethod());
 		}
+        
+        [Fact]
+        public void MockMethodMustBeCalledExpectedNumberOfTimes()
+        {
+            var mock = new Mock<IFakeProxyInterface>();
+            
+            mock.Object.SimplestMethod();
+            
+            mock.Verify(m => m.SimplestMethod(), Times.Once());
+        }
     }
 }

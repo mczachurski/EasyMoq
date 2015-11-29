@@ -4,24 +4,37 @@ namespace SunLine.EasyMoq.Core
 {
     public class Interceptor
     {
-        private ConcurrentDictionary<string, object> _returnedObjects;            
+        private ConcurrentDictionary<string, MethodInformation> _methodInformation;            
         public Interceptor()
         {
-            _returnedObjects = new ConcurrentDictionary<string, object>();
+            _methodInformation = new ConcurrentDictionary<string, MethodInformation>();
         }
             
-        public void AddReturnedObject(string key, object value)
+        public void AddMethodInformation(MethodInformation methodInformation)
         {
-            _returnedObjects.AddOrUpdate(key, value, (oldkey, oldvalue) => value);
+            _methodInformation.AddOrUpdate(methodInformation.Hash, methodInformation, (oldkey, oldvalue) => methodInformation);
         }
             
-        public object GetReturnedObject(string key)
+        public object GetReturnObject(string key)
         {
-            if(_returnedObjects.ContainsKey(key))
+            if(_methodInformation.ContainsKey(key))
             {
-                return _returnedObjects[key];
+                return _methodInformation[key].ReturnedObject;
             }
 
+            return null;
+        }
+        
+        public void MethodWasExecuted(string key)
+        {
+            if(_methodInformation.ContainsKey(key))
+            {
+                _methodInformation[key].MethodWasExecuted();
+            }
+        }
+        
+        public MethodInformation GetMethodInformation(CallInfo callInfo)
+        {
             return null;
         }
     }

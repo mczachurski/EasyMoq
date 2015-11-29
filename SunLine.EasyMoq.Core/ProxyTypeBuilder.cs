@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Linq;
 
 namespace SunLine.EasyMoq.Core
 {
@@ -12,7 +13,6 @@ namespace SunLine.EasyMoq.Core
         private readonly IList<MethodInfo> _implementedMethods;
         private readonly Interceptor _interceptor;
         private const string _interceptorFieldName = "_interceptor";
-        private const string _getReturnedObjectMethodName = "GetReturnedObject";
         
         public ProxyTypeBuilder(Type mockInterface, Interceptor interceptor)
         {                 
@@ -34,15 +34,13 @@ namespace SunLine.EasyMoq.Core
         public void MockMethod<TResult>(string name, Type[] parameters, TResult returnValue)
         {
             MethodInfo methodInfo = GetMethodInfo(name, parameters);
-            AddMethodImplementation(methodInfo, 
-                (MethodBuilder methodBuilder) => { EmitInvokeMethod<TResult>(methodBuilder, returnValue); });
+            AddMethodImplementation(methodInfo, (mi, mb) => { EmitInvokeMethod<TResult>(mi, mb, returnValue); });
         }
                 
         public void MockMethod(string name, Type[] parameters, Exception exception)
         {
             MethodInfo methodInfo = GetMethodInfo(name, parameters);
-            AddMethodImplementation(methodInfo, 
-                (MethodBuilder methodBuilder) => { EmitInvokeMethodThowException(methodBuilder, exception); });
+            AddMethodImplementation(methodInfo, (mi, mb) => { EmitInvokeMethodThowException(mi, mb, exception); });
         }
                 
         public void MockNotImplementedMethods()
@@ -51,8 +49,7 @@ namespace SunLine.EasyMoq.Core
             { 
                 if(!_implementedMethods.Contains(methodInfo))
                 {
-                    AddMethodImplementation(methodInfo, 
-                        (MethodBuilder methodBuilder) => { EmitInvokeMethod(methodBuilder); });
+                    AddMethodImplementation(methodInfo, (mi, mb) => { EmitInvokeMethod(mi, mb); });
                 } 
             } 
         }
@@ -65,7 +62,7 @@ namespace SunLine.EasyMoq.Core
             EmitConstructor(constructor);
         }
 
-        private void AddMethodImplementation(MethodInfo methodInfo, Action<MethodBuilder> emitInvokeMethodAction)
+        private void AddMethodImplementation(MethodInfo methodInfo, Action<MethodInfo, MethodBuilder> emitInvokeMethodAction)
         {
             ParameterInfo[] parameters = methodInfo.GetParameters();
             Type[] paramTypes = ParamTypes(parameters, false);
@@ -73,16 +70,20 @@ namespace SunLine.EasyMoq.Core
             MethodBuilder methodBuilder = _typeBuilder.DefineMethod(methodInfo.Name, 
                 MethodAttributes.Public | MethodAttributes.Virtual, methodInfo.ReturnType, paramTypes);
             
-            emitInvokeMethodAction.Invoke(methodBuilder);
+            emitInvokeMethodAction.Invoke(methodInfo, methodBuilder);
             
             _typeBuilder.DefineMethodOverride(methodBuilder, methodInfo);
             _implementedMethods.Add(methodInfo);
         }
         
-        private void EmitInvokeMethod(MethodBuilder methodBuilder)
+        private void EmitInvokeMethod(MethodInfo methodInfo, MethodBuilder methodBuilder)
         {
+            var methodInformation = AddMethodInformationToInterceptor(methodInfo);
+            FieldInfo interceptorFieldInfo = _typeBuilder.GetDeclaredField(_interceptorFieldName);
+            
             ILGenerator ilGenerator = methodBuilder.GetILGenerator();
-        
+            ilGenerator.CallMethodWasExecuted(interceptorFieldInfo, methodInformation.Hash);
+            
             Type type = methodBuilder.ReturnType;
             if (methodBuilder.ReturnType != typeof(void))
             {                
@@ -102,49 +103,36 @@ namespace SunLine.EasyMoq.Core
             ilGenerator.Emit(OpCodes.Ret);
         }
                 
-        private void EmitInvokeMethodThowException(MethodBuilder methodBuilder, Exception exception)
-        {
-            ILGenerator ilGenerator = methodBuilder.GetILGenerator();
-            var keyGuid = Guid.NewGuid().ToString();
-            _interceptor.AddReturnedObject(keyGuid, exception);
+        private void EmitInvokeMethodThowException(MethodInfo methodInfo, MethodBuilder methodBuilder, Exception exception)
+        {            
+            var methodInformation = AddMethodInformationToInterceptor(methodInfo, exception);
             FieldInfo interceptorFieldInfo = _typeBuilder.GetDeclaredField(_interceptorFieldName);
-        
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.Emit(OpCodes.Ldfld, interceptorFieldInfo);
-            ilGenerator.Emit(OpCodes.Ldstr, keyGuid);
-            ilGenerator.Emit(OpCodes.Call, typeof(Interceptor).GetMethod(_getReturnedObjectMethodName, new Type[] { typeof(string) }));
+            
+            ILGenerator ilGenerator = methodBuilder.GetILGenerator();
+            ilGenerator.CallMethodWasExecuted(interceptorFieldInfo, methodInformation.Hash);
+            ilGenerator.CallGetReturnObject(interceptorFieldInfo, methodInformation.Hash);
             ilGenerator.Emit(OpCodes.Throw);
         }
         
-        private void EmitInvokeMethod<TResult>(MethodBuilder methodBuilder, TResult returnValue)
+        private void EmitInvokeMethod<TResult>(MethodInfo methodInfo, MethodBuilder methodBuilder, TResult returnValue)
         {
-            ILGenerator ilGenerator = methodBuilder.GetILGenerator();
-            var keyGuid = Guid.NewGuid().ToString();
-            _interceptor.AddReturnedObject(keyGuid, returnValue);
+            var methodInformation = AddMethodInformationToInterceptor(methodInfo, returnValue);
             FieldInfo interceptorFieldInfo = _typeBuilder.GetDeclaredField(_interceptorFieldName);
-        
+            
+            ILGenerator ilGenerator = methodBuilder.GetILGenerator();
+            ilGenerator.CallMethodWasExecuted(interceptorFieldInfo, methodInformation.Hash);
+            
             Type type = methodBuilder.ReturnType;
             if (methodBuilder.ReturnType != typeof(void))
             {
                 if (methodBuilder.ReturnType.GetTypeInfo().IsValueType)
                 {
-                    var valObj = ilGenerator.DeclareLocal(typeof(object));
-                    
-                    ilGenerator.Emit(OpCodes.Ldarg_0);
-                    ilGenerator.Emit(OpCodes.Ldfld, interceptorFieldInfo);
-                    ilGenerator.Emit(OpCodes.Ldstr, keyGuid);
-                    ilGenerator.Emit(OpCodes.Call, typeof(Interceptor).GetMethod(_getReturnedObjectMethodName, new Type[] { typeof(string) }));
-                    ilGenerator.Emit(OpCodes.Box, typeof(object));
-                    ilGenerator.Emit(OpCodes.Stloc, valObj);
-                    ilGenerator.Emit(OpCodes.Ldloc, valObj);
-                    ilGenerator.Emit(OpCodes.Unbox_Any, methodBuilder.ReturnType);
+                    ilGenerator.CallGetReturnObject(interceptorFieldInfo, methodInformation.Hash);
+                    ilGenerator.UnboxObject(typeof(object), methodBuilder.ReturnType);
                 }
                 else
                 {
-                    ilGenerator.Emit(OpCodes.Ldarg_0);
-                    ilGenerator.Emit(OpCodes.Ldfld, interceptorFieldInfo);
-                    ilGenerator.Emit(OpCodes.Ldstr, keyGuid);
-                    ilGenerator.Emit(OpCodes.Call, typeof(Interceptor).GetMethod(_getReturnedObjectMethodName, new Type[] { typeof(string) }));
+                    ilGenerator.CallGetReturnObject(interceptorFieldInfo, methodInformation.Hash);
                 }
             }
         
@@ -160,6 +148,20 @@ namespace SunLine.EasyMoq.Core
             ilGenerator.Emit(OpCodes.Ldarg_1);
             ilGenerator.Emit(OpCodes.Stfld, fieldBuilder);
             ilGenerator.Emit(OpCodes.Ret);
+        }
+
+        private MethodInformation AddMethodInformationToInterceptor(MethodInfo methodInfo)
+        {
+            return AddMethodInformationToInterceptor(methodInfo, null);
+        }
+        
+        private MethodInformation AddMethodInformationToInterceptor(MethodInfo methodInfo, object returnValue)
+        {
+            Type[] parameters = methodInfo.GetParameters().Select(x => x.ParameterType).ToArray();
+            var methodInformation = new MethodInformation(methodInfo.Name, methodInfo.ReturnType, parameters, returnValue);
+            _interceptor.AddMethodInformation(methodInformation);
+            
+            return methodInformation;
         }
         
         private MethodInfo GetMethodInfo(string name, Type[] parameters)

@@ -119,7 +119,7 @@ namespace SunLine.EasyMoq.Core
 			}
 		}
 		
-		public static bool CanOverride(MethodInfo method)
+		private static bool CanOverride(MethodInfo method)
 		{
 			return method.IsVirtual && !method.IsFinal && !method.IsPrivate;
 		}

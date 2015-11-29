@@ -5,7 +5,7 @@ namespace SunLine.EasyMoq.Core
 {
 	internal static class Guard
 	{
-		public static void NotNull<T>(Expression<Func<T>> reference, T value)
+		internal static void NotNull<T>(Expression<Func<T>> reference, T value)
 		{
 			if (value == null)
 			{
@@ -13,7 +13,7 @@ namespace SunLine.EasyMoq.Core
 			}
 		}
 
-		public static void NotNullOrEmpty(Expression<Func<string>> reference, string value)
+		internal static void NotNullOrEmpty(Expression<Func<string>> reference, string value)
 		{
 			NotNull<string>(reference, value);
 			if (value.Length == 0)
@@ -22,7 +22,7 @@ namespace SunLine.EasyMoq.Core
 			}
 		}
 
-		public static void NotOutOfRangeInclusive<T>(Expression<Func<T>> reference, T value, T from, T to)
+		internal static void NotOutOfRangeInclusive<T>(Expression<Func<T>> reference, T value, T from, T to)
 				where T : IComparable
 		{
 			if (value != null && (value.CompareTo(from) < 0 || value.CompareTo(to) > 0))
@@ -31,7 +31,7 @@ namespace SunLine.EasyMoq.Core
 			}
 		}
 
-		public static void NotOutOfRangeExclusive<T>(Expression<Func<T>> reference, T value, T from, T to)
+		internal static void NotOutOfRangeExclusive<T>(Expression<Func<T>> reference, T value, T from, T to)
 				where T : IComparable
 		{
 			if (value != null && (value.CompareTo(from) <= 0 || value.CompareTo(to) >= 0))

@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 
 namespace SunLine.EasyMoq.Core
 {
-	public class ProxyAssemblyBuilder
+	internal class ProxyAssemblyBuilder
 	{
 		private static volatile ProxyAssemblyBuilder _instance;
    		private static object _syncRoot = new Object();
@@ -17,7 +17,7 @@ namespace SunLine.EasyMoq.Core
 			_moduleBuilder = CreateModuleBuilder();
 		}
 
-   		public static ProxyAssemblyBuilder Instance
+   		internal static ProxyAssemblyBuilder Instance
    		{
       		get 
       		{
@@ -36,14 +36,14 @@ namespace SunLine.EasyMoq.Core
       		}
    		}
 		   
-		public TypeBuilder CreateTypeBuilder(Type mockType)
+		internal TypeBuilder CreateTypeBuilder(Type mockType)
 		{
 			var randomName = Guid.NewGuid().ToString();
 			var typeBuilder = _moduleBuilder.DefineType($"Proxy{mockType.Name}{randomName}", TypeAttributes.Public);
 			return typeBuilder;
 		}	
 		
-		private AssemblyBuilder CreateAssemblyBuilder()
+		internal AssemblyBuilder CreateAssemblyBuilder()
 		{
             var assemblyName = new AssemblyName("SunLine.EasyMoq.ProxyAssembly");
             assemblyName.Version = new Version(1, 0, 0);

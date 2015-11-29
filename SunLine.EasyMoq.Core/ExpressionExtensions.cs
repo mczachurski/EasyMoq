@@ -7,7 +7,7 @@ namespace SunLine.EasyMoq.Core
 {
 	internal static class ExpressionExtensions
 	{
-		public static MethodCallExpression ToMethodCall(this LambdaExpression expression)
+		internal static MethodCallExpression ToMethodCall(this LambdaExpression expression)
 		{
 			Guard.NotNull(() => expression, expression);
 
@@ -23,7 +23,7 @@ namespace SunLine.EasyMoq.Core
 			return methodCall;
 		}
 
-		public static PropertyInfo ToPropertyInfo(this LambdaExpression expression)
+		internal static PropertyInfo ToPropertyInfo(this LambdaExpression expression)
 		{
 			var prop = expression.Body as MemberExpression;
 			if (prop != null)

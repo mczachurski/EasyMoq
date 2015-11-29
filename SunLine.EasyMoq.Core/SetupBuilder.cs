@@ -31,9 +31,9 @@ namespace SunLine.EasyMoq.Core
 			MockImplementation();
 		}
 		
-		public void Throws<T>() where T : Exception
+		public void Throws<TException>() where TException : Exception
 		{
-			Exception exception = (T) Activator.CreateInstance(typeof(T));
+			Exception exception = (TException) Activator.CreateInstance(typeof(TException));
 			Throws(exception);
 		}
 		

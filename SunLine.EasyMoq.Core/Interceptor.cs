@@ -34,7 +34,7 @@ namespace SunLine.EasyMoq.Core
             }
         }
         
-        public MethodInformation GetMethodInformation(CallInfo callInfo)
+        internal MethodInformation GetMethodInformation(CallInfo callInfo)
         {
             var methods = _methodInformation.ToArray();
             foreach(var method in methods)

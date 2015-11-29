@@ -4,12 +4,12 @@ using System.Reflection.Emit;
 
 namespace SunLine.EasyMoq.Core
 {
-	public static class ILGeneratorExtensions
+	internal static class ILGeneratorExtensions
 	{
 		private const string _executeMethodMethodName = "MethodWasExecuted";
 		private const string _getReturnedObjectMethodName = "GetReturnObject"; 
 		
-		public static void CallMethodWasExecuted(this ILGenerator ilGenerator, FieldInfo interceptorFieldInfo, string methodhash)
+		internal static void CallMethodWasExecuted(this ILGenerator ilGenerator, FieldInfo interceptorFieldInfo, string methodhash)
 		{
             ilGenerator.Emit(OpCodes.Ldarg_0);
             ilGenerator.Emit(OpCodes.Ldfld, interceptorFieldInfo);
@@ -17,7 +17,7 @@ namespace SunLine.EasyMoq.Core
             ilGenerator.Emit(OpCodes.Call, typeof(Interceptor).GetMethod(_executeMethodMethodName, new Type[] { typeof(string) }));  
 		}
 		
-		public static void CallGetReturnObject(this ILGenerator ilGenerator, FieldInfo interceptorFieldInfo, string methodhash)
+		internal static void CallGetReturnObject(this ILGenerator ilGenerator, FieldInfo interceptorFieldInfo, string methodhash)
 		{
             ilGenerator.Emit(OpCodes.Ldarg_0);
             ilGenerator.Emit(OpCodes.Ldfld, interceptorFieldInfo);
@@ -25,7 +25,7 @@ namespace SunLine.EasyMoq.Core
             ilGenerator.Emit(OpCodes.Call, typeof(Interceptor).GetMethod(_getReturnedObjectMethodName, new Type[] { typeof(string) }));
 		}
 		
-		public static void UnboxObject(this ILGenerator ilGenerator, Type typeFrom, Type typeTo)
+		internal static void UnboxObject(this ILGenerator ilGenerator, Type typeFrom, Type typeTo)
 		{
 			var valObj = ilGenerator.DeclareLocal(typeFrom);
 			ilGenerator.Emit(OpCodes.Box, typeFrom);

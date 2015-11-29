@@ -70,6 +70,7 @@ namespace SunLine.EasyMoq.Core
 		where TMock : class
 	{
         private Func<TResult> _returnExpression; 
+		private Delegate valueDelegate = (Func<TResult>)(() => default(TResult));
 		
 		public Type ReturnType
 		{
@@ -86,7 +87,7 @@ namespace SunLine.EasyMoq.Core
         {
             _expression = expression.Body;
         }
-        
+		
         public void Returns(Func<TResult> returnExpression)
 		{
 			SetReturnDelegate(returnExpression);
@@ -96,6 +97,41 @@ namespace SunLine.EasyMoq.Core
 		public void Returns(TResult value)
 		{
 			Returns(() => value);
+		}
+		
+		public void Returns<T1>(Func<T1, TResult> valueFunction)
+		{
+			
+		}
+		
+		public void Returns<T1, T2>(Func<T1, T2, TResult> valueFunction)
+		{
+			
+		}
+		
+		public void Returns<T1, T2, T3>(Func<T1, T2, T3, TResult> valueFunction)
+		{
+			
+		}
+		
+		public void Returns<T1, T2, T3,T4>(Func<T1, T2, T3, T4, TResult> valueFunction)
+		{
+			
+		}
+		
+		public void Returns<T1, T2, T3,T4, T5>(Func<T1, T2, T3, T4, T5, TResult> valueFunction)
+		{
+			
+		}
+		
+		public void Returns<T1, T2, T3,T4, T5, T6>(Func<T1, T2, T3, T4, T5, T6, TResult> valueFunction)
+		{
+			
+		}
+		
+		public void Returns<T1, T2, T3,T4, T5, T6, T7>(Func<T1, T2, T3, T4, T5, T6, T7, TResult> valueFunction)
+		{
+			
 		}
 		
 		protected override void MockImplementation()

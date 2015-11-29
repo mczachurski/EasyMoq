@@ -15,5 +15,7 @@ namespace SunLine.EasyMoq.Tests.Objects
 		SimpleObject MethodReturnsSimpleObject();
 		
 		int MethodWithValueParameter(int number);
+		
+		SimpleObject MethodReturnsSimpleObjectWithParameter(int number);
 	}
 }

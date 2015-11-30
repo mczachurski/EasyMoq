@@ -1,7 +1,7 @@
 using Xunit;
 using System;
 using SunLine.EasyMoq.Core;
-using SunLine.EasyMoq.Tests.Objects;
+using SunLine.EasyMoq.TestServices;
 
 namespace SunLine.EasyMoq.Tests
 {
@@ -10,7 +10,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustBeCreated()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             
             Assert.NotNull(mock);
         }
@@ -18,7 +18,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectTypeMustBeCreated()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
              
             Assert.NotNull(mock.ObjectType);
         }
@@ -26,9 +26,9 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustImplementInterface()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             
-            var proxyObject = mock.Object as IFakeProxyInterface;
+            var proxyObject = mock.Object as IUserService;
 
             Assert.NotNull(proxyObject);
         }
@@ -36,7 +36,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustCanCallSimplestMethod()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             
             mock.Object.SimplestMethod();
         }
@@ -44,7 +44,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustCanCallMethodReturningInt()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             mock.Setup(x => x.MethodReturnsInt());
 
             mock.Object.MethodReturnsInt();
@@ -53,7 +53,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustReturnExpectedInt()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             mock.Setup(x => x.MethodReturnsInt()).Returns(666);
 
             int number = mock.Object.MethodReturnsInt();
@@ -64,7 +64,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustReturnExpectedIntWhenWeUsesItIsAny()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             mock.Setup(x => x.MethodWithValueParameter(It.IsAny<int>())).Returns(24);
             
             int value = mock.Object.MethodWithValueParameter(1);
@@ -75,7 +75,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustCanCallMethodReturningString()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             mock.Setup(x => x.MethodReturnsString());
 
             mock.Object.MethodReturnsString();
@@ -84,7 +84,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustReturnExpectedString()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             mock.Setup(x => x.MethodReturnsString()).Returns("text");
 
             string text = mock.Object.MethodReturnsString();
@@ -95,7 +95,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustCanCallMethodReturningEnum()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             mock.Setup(x => x.MethodReturnsEnum());
             
             mock.Object.MethodReturnsEnum();
@@ -104,18 +104,18 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustReturnExpectedEnum()
         {
-            var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodReturnsEnum()).Returns(ValueEnum.Number);
+            var mock = new Mock<IUserService>();
+            mock.Setup(x => x.MethodReturnsEnum()).Returns(UserStatusEnum.Active);
             
-            ValueEnum value = mock.Object.MethodReturnsEnum();
+            UserStatusEnum value = mock.Object.MethodReturnsEnum();
             
-            Assert.Equal(ValueEnum.Number, value);
+            Assert.Equal(UserStatusEnum.Active, value);
         }
         
         [Fact]
         public void MockObjectMustCanCallMethodReturningObject()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             mock.Setup(x => x.MethodReturnsSimpleObject());
             
             mock.Object.MethodReturnsSimpleObject();
@@ -124,8 +124,8 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustReturnExpectedObject()
         {
-            var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodReturnsSimpleObject()).Returns(new SimpleObject { Number = 123 });
+            var mock = new Mock<IUserService>();
+            mock.Setup(x => x.MethodReturnsSimpleObject()).Returns(new User { Number = 123 });
             
             var simpleObject = mock.Object.MethodReturnsSimpleObject();
             
@@ -135,7 +135,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustCanCallMethodWithValueParameter()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             mock.Setup(x => x.MethodWithValueParameter(12));
             
             mock.Object.MethodWithValueParameter(1);
@@ -144,7 +144,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockObjectMustReturnExpectedValueForProperty()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             mock.Setup(x => x.IntegerProperty).Returns(10);
             
             int value = mock.Object.IntegerProperty;
@@ -155,7 +155,7 @@ namespace SunLine.EasyMoq.Tests
 		[Fact]
 		public void ThrowsIfExpectationThrows()
 		{
-			var mock = new Mock<IFakeProxyInterface>();
+			var mock = new Mock<IUserService>();
 
 			mock.Setup(x => x.SimplestMethod()).Throws(new FormatException());
 
@@ -165,7 +165,7 @@ namespace SunLine.EasyMoq.Tests
 		[Fact]
 		public void ThrowsIfExpectationThrowsWithGenericsExceptionType()
 		{
-			var mock = new Mock<IFakeProxyInterface>();
+			var mock = new Mock<IUserService>();
 
 			mock.Setup(x => x.SimplestMethod()).Throws<FormatException>();
 
@@ -175,7 +175,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockMethodWithoutParametersMustBeCalledExpectedNumberOfTimes()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             
             mock.Object.SimplestMethod();
             
@@ -185,7 +185,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockMethodWithParametersMustBeCalledExpectedNumberOfTimes()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             
             mock.Object.MethodWithValueParameter(1);
             mock.Object.MethodWithValueParameter(2);
@@ -197,7 +197,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockMethodMustBeCalledExpectedNumberOfTimesEvenIfOtherMethodsAreCalled()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             
             mock.Object.SimplestMethod();
             mock.Object.MethodWithValueParameter(1);
@@ -211,7 +211,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockMustThrowExceptionWhenMethodShouldnBeCalled()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             
             mock.Object.MethodWithValueParameter(1);
             
@@ -221,7 +221,7 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockMustThrowExceptionWhenMethodWasntCalled()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             
             var obj = mock.Object;
             
@@ -231,11 +231,46 @@ namespace SunLine.EasyMoq.Tests
         [Fact]
         public void MockPropertyMustBeCalledExpectedNumberOfTimes()
         {
-            var mock = new Mock<IFakeProxyInterface>();
+            var mock = new Mock<IUserService>();
             
             var integerProperty = mock.Object.IntegerProperty;
             
             mock.Verify(x => x.IntegerProperty, Times.Once());
+        }
+        
+        [Fact]
+        public void TwoMocksShouldWorkAsExpected()
+        {
+            var firstMock = new Mock<IUserService>();
+            var secondMock = new Mock<IAccessService>();
+            firstMock.Setup(x => x.MethodReturnsInt()).Returns(11);
+            
+            var integer = firstMock.Object.MethodReturnsInt();
+            
+            Assert.Equal(11, integer);
+        }
+        
+        [Fact]
+        public void MockShouldReturnInformationMassegeViaToString()
+        {
+            var firstMock = new Mock<IUserService>();
+            firstMock.Setup(x => x.MethodReturnsInt()).Returns(20);
+            
+            firstMock.Object.SimplestMethod();
+            firstMock.Object.SimplestMethod();
+            var information = firstMock.ToString();
+            
+            Assert.StartsWith("Object was initialized.", information);
+        }
+        
+        [Fact]
+        public void MockShoudReturnInformationThatObjectWasntInitialized()
+        {
+            var firstMock = new Mock<IUserService>();
+
+            var information = firstMock.ToString();
+            
+            Assert.StartsWith("Object wasn't initialized.", information);
         }
     }
 }

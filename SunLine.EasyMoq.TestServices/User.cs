@@ -1,6 +1,6 @@
-namespace SunLine.EasyMoq.Tests.Objects
+namespace SunLine.EasyMoq.TestServices
 {
-	public class SimpleObject
+	public class User
 	{
 		private int _number;
 		

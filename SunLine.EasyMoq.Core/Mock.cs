@@ -10,6 +10,7 @@ namespace SunLine.EasyMoq.Core
     {
         private TMock _object;
         private Type _objectType;
+        private bool _wasInitialized;
         private readonly ProxyTypeBuilder _proxyTypeBuilder;
         private readonly Interceptor _interceptor;
 
@@ -96,6 +97,19 @@ namespace SunLine.EasyMoq.Core
             VerifyCalls(callInfo, expression, times);
         }
 
+        public override string ToString()
+        {
+            string information = "Object wasn't initialized.";
+            if(_wasInitialized)
+            {
+                var assembly = _objectType.GetTypeInfo().Assembly;
+                information = $"Object was initialized. Assembly name: {assembly.FullName}.\n" + 
+                    $"Object name: {_objectType.Name}. Amount of access: {_interceptor.AmountOfAccess}.";                
+            }
+            
+            return information;
+        }
+
         private void VerifyCalls(CallInfo callInfo, Expression expression, Times times)
         {
             var methodInformation = _interceptor.GetMethodInformation(callInfo);
@@ -132,6 +146,7 @@ namespace SunLine.EasyMoq.Core
             _proxyTypeBuilder.MockNotImplementedMethods();
             _objectType = _proxyTypeBuilder.CreateTypeInfo().AsType();
             _object = (TMock)Activator.CreateInstance(_objectType, _interceptor);
+            _wasInitialized = true;
         }
     }
 }

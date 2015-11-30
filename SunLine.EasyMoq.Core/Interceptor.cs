@@ -6,6 +6,7 @@ namespace SunLine.EasyMoq.Core
     public class Interceptor
     {
         private readonly ConcurrentDictionary<string, MethodInformation> _methodInformation;
+        public int AmountOfAccess { get; private set; }
 
         public Interceptor()
         {
@@ -29,6 +30,7 @@ namespace SunLine.EasyMoq.Core
 
         public void MethodWasExecuted(string key)
         {
+            AmountOfAccess++;
             if (_methodInformation.ContainsKey(key))
             {
                 _methodInformation[key].MethodWasExecuted();

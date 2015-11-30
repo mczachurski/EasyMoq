@@ -22,7 +22,7 @@ namespace SunLine.EasyMoq.Tests
              
             Assert.NotNull(mock.ObjectType);
         }
-        
+
         [Fact]
         public void MockObjectMustImplementInterface()
         {
@@ -259,7 +259,7 @@ namespace SunLine.EasyMoq.Tests
             firstMock.Object.SimplestMethod();
             firstMock.Object.SimplestMethod();
             var information = firstMock.ToString();
-            
+
             Assert.StartsWith("Object was initialized.", information);
         }
         

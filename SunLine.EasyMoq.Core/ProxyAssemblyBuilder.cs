@@ -38,8 +38,8 @@ namespace SunLine.EasyMoq.Core
 
         internal TypeBuilder CreateTypeBuilder(Type mockType)
         {
-            var randomName = Guid.NewGuid().ToString();
-            var typeBuilder = _moduleBuilder.DefineType($"Proxy{mockType.Name}{randomName}", TypeAttributes.Public);
+            var randomName = Guid.NewGuid().ToString().Replace("-", string.Empty);
+            var typeBuilder = _moduleBuilder.DefineType($"Proxy{mockType.Name}${randomName}", TypeAttributes.Public);
             return typeBuilder;
         }
 

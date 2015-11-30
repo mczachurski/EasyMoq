@@ -56,7 +56,7 @@ namespace SunLine.EasyMoq.Core
 
         private void AddConstructor()
         {
-            ConstructorBuilder constructor = _typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Any,
+            ConstructorBuilder constructor = _typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard,
                 new[] { typeof(Interceptor) });
 
             EmitConstructor(constructor);

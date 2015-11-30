@@ -237,16 +237,5 @@ namespace SunLine.EasyMoq.Tests
             
             mock.Verify(x => x.IntegerProperty, Times.Once());
         }
-        
-        [Fact]
-        public void MockMustReturnObjectWithUpdatedValueFromArguments()
-        {
-            var mock = new Mock<IFakeProxyInterface>();
-            mock.Setup(x => x.MethodReturnsSimpleObjectWithParameter(It.IsAny<int>())).Returns((int id) => new SimpleObject { Number = id });
-            
-            var simpleObject = mock.Object.MethodReturnsSimpleObjectWithParameter(500);
-            
-            Assert.Equal(500, simpleObject.Number);
-        }
     }
 }

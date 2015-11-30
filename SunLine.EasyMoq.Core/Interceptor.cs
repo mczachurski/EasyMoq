@@ -5,67 +5,68 @@ namespace SunLine.EasyMoq.Core
 {
     public class Interceptor
     {
-        private ConcurrentDictionary<string, MethodInformation> _methodInformation;            
+        private readonly ConcurrentDictionary<string, MethodInformation> _methodInformation;
+
         public Interceptor()
         {
             _methodInformation = new ConcurrentDictionary<string, MethodInformation>();
         }
-            
+
         public void AddMethodInformation(MethodInformation methodInformation)
         {
             _methodInformation.AddOrUpdate(methodInformation.Hash, methodInformation, (oldkey, oldvalue) => methodInformation);
         }
-            
+
         public object GetReturnObject(string key)
         {
-            if(_methodInformation.ContainsKey(key))
+            if (_methodInformation.ContainsKey(key))
             {
                 return _methodInformation[key].ReturnedObject;
             }
 
             return null;
         }
-        
+
         public void MethodWasExecuted(string key)
         {
-            if(_methodInformation.ContainsKey(key))
+            if (_methodInformation.ContainsKey(key))
             {
                 _methodInformation[key].MethodWasExecuted();
             }
         }
-        
+
         internal MethodInformation GetMethodInformation(CallInfo callInfo)
         {
             var methods = _methodInformation.ToArray();
-            foreach(var method in methods)
-            {               
-                if(method.Value.Name == callInfo.Method.Name)
+            foreach (var method in methods)
+            {
+                if (method.Value.Name == callInfo.Method.Name)
                 {
                     var parameters1 = callInfo.Method.GetParameters().Select(x => x.ParameterType).ToArray();
                     var parameters2 = method.Value.Parameters;
-                    
-                    if(parameters1.Length != parameters2.Length)
+
+                    if (parameters1.Length != parameters2.Length)
                     {
                         continue;
                     }
-                    
+
                     bool sameParameters = true;
-                    for(int i = 0; i < parameters1.Length; i++)
+                    for (int i = 0; i < parameters1.Length; i++)
                     {
-                        if(parameters1[i] != parameters2[i])
+                        if (parameters1[i] != parameters2[i])
                         {
                             sameParameters = false;
                             break;
                         }
                     }
-                    
-                    if(sameParameters)
+
+                    if (sameParameters)
                     {
                         return method.Value;
                     }
                 }
             }
-            
+
             return null;
         }
     }

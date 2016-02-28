@@ -1,4 +1,4 @@
-namespace SunLine.EasyMoq.TestServices
+namespace SunLine.EasyMoq.Tests.Objects
 {
 	public class Access
 	{

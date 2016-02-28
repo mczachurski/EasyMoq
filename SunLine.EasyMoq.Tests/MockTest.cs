@@ -1,7 +1,9 @@
 using Xunit;
 using System;
+using System.Collections.Generic;
 using SunLine.EasyMoq.Core;
-using SunLine.EasyMoq.TestServices;
+using SunLine.EasyMoq.Tests.Objects;
+using SunLine.EasyMoq.Tests.Services;
 
 namespace SunLine.EasyMoq.Tests
 {
@@ -271,6 +273,28 @@ namespace SunLine.EasyMoq.Tests
             var information = firstMock.ToString();
             
             Assert.StartsWith("Object wasn't initialized.", information);
+        }
+        
+        [Fact]
+        public void MockShouldCorrectMockMethodReturnedCollection()
+        {
+            var userMock = new Mock<IUserService>();
+            userMock.Setup(x => x.GetUserAccess(1)).Returns(new List<Access>());
+
+            var access = userMock.Object.GetUserAccess(1);
+            
+            Assert.NotNull(access);
+        }
+        
+        [Fact]
+        public void MockShouldCorrectMockMethodWithCollectionParameter()
+        {
+            var userMock = new Mock<IUserService>();
+            userMock.Setup(x => x.UpdateUserAccess(1, null)).Returns(new List<Access>());
+
+            var access = userMock.Object.UpdateUserAccess(1, null);
+            
+            Assert.NotNull(access);
         }
     }
 }

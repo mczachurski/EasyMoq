@@ -1,4 +1,6 @@
-namespace SunLine.EasyMoq.TestServices
+using SunLine.EasyMoq.Tests.Objects;
+
+namespace SunLine.EasyMoq.Tests.Services
 {	
 	public interface IAccessService
 	{	

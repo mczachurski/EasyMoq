@@ -78,7 +78,7 @@ Or we can use methods like: "AtLeast", "AtLeastOnce', "AtMost", "AtMostOnce", "B
 
 ## Missing features.
 Still there are missing features, like:
- - matching method arguments,
- - stub properties,
- - stub events,
- - callbacks.
+- matching method arguments,
+- stub properties,
+- stub events,
+- callbacks.
